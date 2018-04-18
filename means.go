@@ -7,6 +7,7 @@ import (
 type MeansType string
 
 const (
+	Empty                   = ""
 	GitHubRelease MeansType = "github-release"
 	GoGet                   = "go-get"
 	HomeBrew                = "homebrew"

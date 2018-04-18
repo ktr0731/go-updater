@@ -11,7 +11,7 @@ type gitHubClient struct {
 	owner, repo string
 }
 
-func NewGitHubReleaseMeans(owner, repo string) Means {
+func newGitHubReleaseMeans(owner, repo string) Means {
 	return &gitHubClient{
 		client: github.NewClient(nil),
 	}

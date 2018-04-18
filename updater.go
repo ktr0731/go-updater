@@ -4,18 +4,34 @@ import (
 	"context"
 	"sync"
 
+	semver "github.com/ktr0731/go-semver"
 	"github.com/pkg/errors"
 )
 
 type Updater struct {
-	mu       sync.Mutex
-	m        map[MeansType]Means
 	UpdateIf UpdateCondition
+
+	current *semver.Version
+
+	mu sync.Mutex
+	m  map[MeansType]Means
 }
 
-func New() *Updater {
+// New receives repository info for fetch release tags
+// TODO: other hosting services, like BitBucket
+func New(owner, repo string, current *semver.Version) *Updater {
+	u := newUpdater(owner, repo, current)
+	if err := u.RegisterMeans(newGitHubReleaseMeans(owner, repo)); err != nil {
+		panic(err)
+	}
+	return u
+}
+
+func newUpdater(owner, repo string, current *semver.Version) *Updater {
 	return &Updater{
-		m: map[MeansType]Means{},
+		UpdateIf: FoundMinorUpdate,
+		current:  current,
+		m:        map[MeansType]Means{},
 	}
 }
 
@@ -36,4 +52,10 @@ func (u *Updater) UpdateBy(typ MeansType) error {
 	}
 	_, err := m.Update(context.TODO())
 	return err
+}
+
+func (u *Updater) Updatable() bool {
+	m := u.m[GitHubRelease]
+	m.LatestTag(context.Background())
+	return true
 }
