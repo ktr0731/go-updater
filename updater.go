@@ -54,8 +54,11 @@ func (u *Updater) UpdateBy(typ MeansType) error {
 	return err
 }
 
-func (u *Updater) Updatable() bool {
+func (u *Updater) Updatable() (bool, error) {
 	m := u.m[GitHubRelease]
-	m.LatestTag(context.Background())
-	return true
+	latest, err := m.LatestTag(context.Background())
+	if err != nil {
+		return false, err
+	}
+	return u.UpdateIf(u.current, latest), nil
 }

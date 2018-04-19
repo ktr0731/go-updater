@@ -2,6 +2,8 @@ package updater
 
 import (
 	"context"
+
+	semver "github.com/ktr0731/go-semver"
 )
 
 type MeansType string
@@ -14,8 +16,8 @@ const (
 )
 
 type Means interface {
-	LatestTag(context.Context) (string, error)
-	Update(context.Context) (string, error)
+	LatestTag(context.Context) (*semver.Version, error)
+	Update(context.Context) (*semver.Version, error)
 
 	Type() MeansType
 

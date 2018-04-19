@@ -10,10 +10,10 @@ var (
 	}
 
 	FoundMinorUpdate = func(current, latest *semver.Version) bool {
-		return current.LessThan(latest) && current.Minor < latest.Minor
+		return current.LessThan(latest) && (current.Major < latest.Major || current.Minor < latest.Minor)
 	}
 
 	FoundPatchUpdate = func(current, latest *semver.Version) bool {
-		return current.LessThan(latest) && current.Patch < latest.Patch
+		return current.LessThan(latest)
 	}
 )
