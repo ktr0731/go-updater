@@ -22,4 +22,6 @@ type Means interface {
 	Type() MeansType
 
 	Installed() bool
+
+	CommandText(*semver.Version) string
 }

@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"io"
 	"sync"
 
 	semver "github.com/ktr0731/go-semver"
@@ -61,4 +62,13 @@ func (u *Updater) Updatable() (bool, error) {
 		return false, err
 	}
 	return u.UpdateIf(u.current, latest), nil
+}
+
+func (u *Updater) PrintInstruction(typ MeansType, w io.Writer, v *semver.Version) error {
+	m, ok := u.m[typ]
+	if !ok {
+		return errors.Errorf("no such means: %s", typ)
+	}
+	_, err := io.WriteString(w, m.CommandText(v))
+	return err
 }

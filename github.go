@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
@@ -33,6 +34,16 @@ func (c *gitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 
 func (c *gitHubClient) Installed() bool {
 	return false
+}
+
+func (c *gitHubClient) CommandText(v *semver.Version) string {
+	return fmt.Sprintf(
+		"curl -sL https://github.com/%s/%s/releases/download/%s/%s_{OS}_{ARCH}.tar.gz | tar xf -",
+		c.owner,
+		c.repo,
+		v,
+		c.repo,
+	)
 }
 
 func (c *gitHubClient) Type() MeansType {
