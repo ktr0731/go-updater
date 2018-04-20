@@ -52,29 +52,24 @@ func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 	return semver.MustParse(r.GetTagName()), nil
 }
 
-func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
+func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error {
 	p, err := exec.LookPath(os.Args[0])
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to lookup the command, are you installed?")
-	}
-
-	latest, err := c.LatestTag(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get latest tag")
+		return errors.Wrap(err, "failed to lookup the command, are you installed?")
 	}
 
 	res, err := http.Get(c.releaseURL(latest))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get release binary")
+		return errors.Wrap(err, "failed to get release binary")
 	}
 	defer res.Body.Close()
 
 	dec, err := c.Decompresser(res.Body)
 	if err != nil && err != io.EOF {
-		return nil, errors.Wrap(err, "failed to decompress downloaded release file")
+		return errors.Wrap(err, "failed to decompress downloaded release file")
 	}
 
-	return latest, updateBinaryWithBackup(p, dec)
+	return updateBinaryWithBackup(p, dec)
 }
 
 func (c *GitHubClient) Installed() bool {

@@ -57,16 +57,11 @@ func (c *HomeBrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 	return semver.MustParse(strings.TrimSpace(string(out))), nil
 }
 
-func (c *HomeBrewClient) Update(ctx context.Context) (*semver.Version, error) {
-	latest, err := c.LatestTag(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get the latest tag")
-	}
-
+func (c *HomeBrewClient) Update(ctx context.Context, _ *semver.Version) error {
 	if err := exec.Command(c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
-		return nil, errors.Wrap(err, "failed to upgrade the binary")
+		return errors.Wrap(err, "failed to upgrade the binary")
 	}
-	return latest, nil
+	return nil
 }
 
 func (c *HomeBrewClient) Installed() bool {

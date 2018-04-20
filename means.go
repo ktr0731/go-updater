@@ -11,7 +11,7 @@ import (
 // check whether the software is installed by this.
 type Means interface {
 	LatestTag(context.Context) (*semver.Version, error)
-	Update(context.Context) (*semver.Version, error)
+	Update(context.Context, *semver.Version) error
 
 	Installed() bool
 

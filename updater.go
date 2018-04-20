@@ -34,7 +34,7 @@ func (u *Updater) Update() error {
 		return errors.Wrap(err, "failed to check the latest release")
 	}
 	if updatable {
-		_, err = u.m.Update(context.TODO())
+		err = u.m.Update(context.TODO(), u.cachedLatest)
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to update the binary")
