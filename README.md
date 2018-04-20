@@ -15,15 +15,15 @@ import (
 var version = semver.MustParse("0.1.0")
 
 func main() {
-	u := updater.New("ktr0731", "evans", version)
+	// determine what use means for update this software
+	// in this example, use GitHub release
+	u := updater.New(version, NewGitHubReleaseMeans("ktr0731", "evans"))
 
 	// in default, update if minor update found
 	u.UpdateIf = FoundPatchUpdate
 
 	if u.Updatable() {
-		// determine what use means for update this software
-		// in this example, use HomeBrew
-		latest, err := u.UpdateBy(updater.HomeBrew)
+		latest, err := u.Update()
 		if err != nil {
 			panic(err)
 		}

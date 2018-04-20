@@ -19,8 +19,6 @@ type Means interface {
 	LatestTag(context.Context) (*semver.Version, error)
 	Update(context.Context) (*semver.Version, error)
 
-	Type() MeansType
-
 	Installed() bool
 
 	CommandText(*semver.Version) string

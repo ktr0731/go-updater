@@ -45,7 +45,3 @@ func (c *gitHubClient) CommandText(v *semver.Version) string {
 		c.repo,
 	)
 }
-
-func (c *gitHubClient) Type() MeansType {
-	return GitHubRelease
-}
