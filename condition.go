@@ -5,15 +5,15 @@ import semver "github.com/ktr0731/go-semver"
 type UpdateCondition func(*semver.Version, *semver.Version) bool
 
 var (
-	FoundMajorUpdate = func(current, latest *semver.Version) bool {
+	FoundMajorUpdate UpdateCondition = func(current, latest *semver.Version) bool {
 		return current.LessThan(latest) && current.Major < latest.Major
 	}
 
-	FoundMinorUpdate = func(current, latest *semver.Version) bool {
+	FoundMinorUpdate UpdateCondition = func(current, latest *semver.Version) bool {
 		return current.LessThan(latest) && (current.Major < latest.Major || current.Minor < latest.Minor)
 	}
 
-	FoundPatchUpdate = func(current, latest *semver.Version) bool {
+	FoundPatchUpdate UpdateCondition = func(current, latest *semver.Version) bool {
 		return current.LessThan(latest)
 	}
 )

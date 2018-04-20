@@ -16,8 +16,6 @@ type Updater struct {
 	m Means
 }
 
-// New receives repository info for fetch release tags
-// TODO: other hosting services, like BitBucket
 func New(current *semver.Version, m Means) *Updater {
 	return &Updater{
 		UpdateIf: FoundMinorUpdate,

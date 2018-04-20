@@ -15,8 +15,8 @@ var (
 )
 
 type mockMeans struct {
-	t      MeansType
-	latest *semver.Version
+	latest       *semver.Version
+	updateCalled bool
 
 	Means
 }
@@ -25,40 +25,15 @@ func (m *mockMeans) LatestTag(_ context.Context) (*semver.Version, error) {
 	return m.latest, nil
 }
 
-func (m *mockMeans) Type() MeansType {
-	// for Updatable(), returns GitHubRelease type
-	if m.t == Empty {
-		return GitHubRelease
-	}
-	return m.t
+func (m *mockMeans) Update(_ context.Context) (*semver.Version, error) {
+	m.updateCalled = true
+	return m.latest, nil
 }
 
-func TestUpdater(t *testing.T) {
-	t.Run("initialized updater has GitHub updater", func(t *testing.T) {
-		u := New("ktr0731", "evans", v)
-		_, ok := u.m[GitHubRelease]
-		assert.True(t, ok)
-	})
-
-	t.Run("can register means", func(t *testing.T) {
-		u := newUpdater("ktr0731", "evans", v)
-		err := u.RegisterMeans(&mockMeans{})
-		assert.NoError(t, err)
-
-		// duplicated means
-		err = u.RegisterMeans(&mockMeans{})
-		assert.Error(t, err)
-	})
-
-}
-
-func TestUpdater_Updatable(t *testing.T) {
+func TestUpdater_Update(t *testing.T) {
 	newMockUpdater := func(t *testing.T) (*Updater, *mockMeans) {
-		u := newUpdater("ktr0731", "evans", v)
 		m := &mockMeans{}
-		err := u.RegisterMeans(m)
-		require.NoError(t, err)
-		return u, m
+		return New(v, m), m
 	}
 
 	cases := []struct {
@@ -86,9 +61,18 @@ func TestUpdater_Updatable(t *testing.T) {
 
 			m.latest = semver.MustParse(c.latest)
 
-			updatable, err := u.Updatable()
+			updatable, _, err := u.Updatable()
 			require.NoError(t, err)
 			assert.Equal(t, c.updatable, updatable)
+
+			err = u.Update()
+			require.NoError(t, err)
+
+			if updatable {
+				assert.True(t, m.updateCalled)
+			} else {
+				assert.False(t, m.updateCalled)
+			}
 		})
 	}
 }

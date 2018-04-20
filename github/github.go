@@ -1,6 +1,7 @@
 package github
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -69,20 +70,12 @@ func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 	}
 	defer res.Body.Close()
 
-	// TODO: rollback
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_RDWR, 0755)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
 	dec, err := c.Decompresser(res.Body)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
-	_, err = io.Copy(f, dec)
 
-	return latest, err
+	return latest, updateBinaryWithBackup(p, dec)
 }
 
 func (c *GitHubClient) Installed() bool {
@@ -95,4 +88,43 @@ func (c *GitHubClient) CommandText(v *semver.Version) string {
 
 func (c *GitHubClient) releaseURL(v *semver.Version) string {
 	return fmt.Sprintf(releaseURLFormat, c.owner, c.repo, v, c.repo)
+}
+
+// for testing
+var ioCopy = io.Copy
+
+func updateBinaryWithBackup(p string, in io.Reader) error {
+	tmp := &bytes.Buffer{}
+
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_RDWR, 0755)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// backup current binary
+	if _, err := io.Copy(tmp, f); err != nil {
+		return err
+	}
+
+	if err := f.Truncate(0); err != nil {
+		return err
+	}
+	if _, err := f.Seek(0, 0); err != nil {
+		return err
+	}
+
+	// rollback
+	defer func() {
+		if err := recover(); err != nil {
+			io.Copy(f, tmp)
+			panic(err)
+		}
+		if err != nil {
+			io.Copy(f, tmp)
+		}
+	}()
+
+	_, err = ioCopy(f, in)
+	return err
 }

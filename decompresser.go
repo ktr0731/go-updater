@@ -9,13 +9,13 @@ import (
 type Decompresser func(io.Reader) (io.Reader, error)
 
 var (
-	DefaultDecompresser = TarGZIPDecompresser
-	TarDecompresser     = func(r io.Reader) (io.Reader, error) {
+	DefaultDecompresser              = TarGZIPDecompresser
+	TarDecompresser     Decompresser = func(r io.Reader) (io.Reader, error) {
 		tr := tar.NewReader(r)
 		_, err := tr.Next()
 		return tr, err
 	}
-	TarGZIPDecompresser = func(r io.Reader) (io.Reader, error) {
+	TarGZIPDecompresser Decompresser = func(r io.Reader) (io.Reader, error) {
 		gr, err := gzip.NewReader(r)
 		if err != nil {
 			return nil, err
