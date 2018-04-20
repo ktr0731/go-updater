@@ -1,8 +1,6 @@
 package github
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
+	updater "github.com/ktr0731/go-updater"
 )
 
 var (
@@ -22,9 +21,9 @@ var (
 )
 
 type GitHubClient struct {
-	client              *github.Client
-	owner, repo         string
-	DecompresserBuilder func(io.Reader) (io.Reader, error)
+	client       *github.Client
+	owner, repo  string
+	Decompresser updater.Decompresser
 }
 
 func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
@@ -34,16 +33,8 @@ func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 		repo:   repo,
 	}
 	// if didn't set Decompresser, use default compresser (tar.gz)
-	if c.DecompresserBuilder == nil {
-		c.DecompresserBuilder = func(r io.Reader) (io.Reader, error) {
-			gr, err := gzip.NewReader(r)
-			if err != nil {
-				return nil, err
-			}
-			tr := tar.NewReader(gr)
-			_, err = tr.Next()
-			return tr, err
-		}
+	if c.Decompresser == nil {
+		c.Decompresser = updater.DefaultDecompresser
 	}
 
 	return c
@@ -81,7 +72,7 @@ func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 	}
 	defer f.Close()
 
-	dec, err := c.DecompresserBuilder(res.Body)
+	dec, err := c.Decompresser(res.Body)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
