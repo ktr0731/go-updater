@@ -10,7 +10,8 @@ import (
 type Updater struct {
 	UpdateIf UpdateCondition
 
-	current *semver.Version
+	current      *semver.Version
+	cachedLatest *semver.Version // to be set when call Updatable()
 
 	m Means
 }
@@ -26,16 +27,25 @@ func New(current *semver.Version, m Means) *Updater {
 }
 
 func (u *Updater) Update() error {
-	_, err := u.m.Update(context.TODO())
+	updatable, _, err := u.Updatable()
+	if err != nil {
+		return err
+	}
+	if updatable {
+		_, err = u.m.Update(context.TODO())
+	}
 	return err
 }
 
 func (u *Updater) Updatable() (bool, *semver.Version, error) {
-	latest, err := u.m.LatestTag(context.Background())
-	if err != nil {
-		return false, nil, err
+	var err error
+	if u.cachedLatest == nil {
+		u.cachedLatest, err = u.m.LatestTag(context.Background())
+		if err != nil {
+			return false, nil, err
+		}
 	}
-	return u.UpdateIf(u.current, latest), latest, nil
+	return u.UpdateIf(u.current, u.cachedLatest), u.cachedLatest, nil
 }
 
 func (u *Updater) PrintInstruction(w io.Writer, v *semver.Version) error {
