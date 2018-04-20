@@ -30,15 +30,15 @@ func (u *Updater) Update() error {
 	return err
 }
 
-func (u *Updater) Updatable() (bool, error) {
+func (u *Updater) Updatable() (bool, *semver.Version, error) {
 	latest, err := u.m.LatestTag(context.Background())
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
-	return u.UpdateIf(u.current, latest), nil
+	return u.UpdateIf(u.current, latest), latest, nil
 }
 
-func (u *Updater) PrintInstruction(typ MeansType, w io.Writer, v *semver.Version) error {
+func (u *Updater) PrintInstruction(w io.Writer, v *semver.Version) error {
 	_, err := io.WriteString(w, u.m.CommandText(v))
 	return err
 }

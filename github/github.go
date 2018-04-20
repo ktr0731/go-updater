@@ -1,19 +1,18 @@
 package github
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
 
 	"github.com/google/go-github/github"
-	"github.com/k0kubun/pp"
 	semver "github.com/ktr0731/go-semver"
-	updater "github.com/ktr0731/go-updater"
 )
 
 var (
@@ -25,10 +24,10 @@ var (
 type GitHubClient struct {
 	client              *github.Client
 	owner, repo         string
-	DecompresserBuilder func(io.Reader) (io.ReadCloser, error)
+	DecompresserBuilder func(io.Reader) (io.Reader, error)
 }
 
-func NewGitHubReleaseMeans(owner, repo string) updater.Means {
+func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 	c := &GitHubClient{
 		client: github.NewClient(nil),
 		owner:  owner,
@@ -36,10 +35,14 @@ func NewGitHubReleaseMeans(owner, repo string) updater.Means {
 	}
 	// if didn't set Decompresser, use default compresser (tar.gz)
 	if c.DecompresserBuilder == nil {
-		c.DecompresserBuilder = func(w io.Reader) (io.ReadCloser, error) {
-			// return gzip.NewReader(tar.NewReader(w))
-			// return ioutil.NopCloser(tar.NewReader(w)), nil
-			return ioutil.NopCloser(w), nil
+		c.DecompresserBuilder = func(r io.Reader) (io.Reader, error) {
+			gr, err := gzip.NewReader(r)
+			if err != nil {
+				return nil, err
+			}
+			tr := tar.NewReader(gr)
+			_, err = tr.Next()
+			return tr, err
 		}
 	}
 
@@ -72,7 +75,6 @@ func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 	defer res.Body.Close()
 
 	// TODO: rollback
-	pp.Println(p)
 	f, err := os.OpenFile(p, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		return nil, err
@@ -89,8 +91,7 @@ func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 }
 
 func (c *GitHubClient) Installed() bool {
-	// return isGitHubReleasedBinary != ""
-	return true
+	return isGitHubReleasedBinary != ""
 }
 
 func (c *GitHubClient) CommandText(v *semver.Version) string {
