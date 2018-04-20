@@ -1,4 +1,4 @@
-package updater
+package github
 
 import (
 	"archive/tar"

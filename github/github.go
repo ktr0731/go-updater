@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
-	updater "github.com/ktr0731/go-updater"
 )
 
 var (
@@ -28,7 +27,7 @@ var (
 type GitHubClient struct {
 	client       *github.Client
 	owner, repo  string
-	Decompresser updater.Decompresser
+	Decompresser Decompresser
 }
 
 func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
@@ -39,7 +38,7 @@ func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 	}
 	// if didn't set Decompresser, use default compresser (tar.gz)
 	if c.Decompresser == nil {
-		c.Decompresser = updater.DefaultDecompresser
+		c.Decompresser = DefaultDecompresser
 	}
 
 	return c
