@@ -17,7 +17,11 @@ import (
 var (
 	isGitHubReleasedBinary string
 
-	releaseURLFormat = fmt.Sprintf("https://github.com/%%s/%%s/releases/download/%%s/%%s_%s_%s.tar.gz", runtime.GOOS, runtime.GOARCH)
+	releaseURLFormat = fmt.Sprintf(
+		"https://github.com/%%s/%%s/releases/download/%%s/%%s_%s_%s.tar.gz",
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 )
 
 type GitHubClient struct {
@@ -86,7 +90,7 @@ func (c *GitHubClient) Installed() bool {
 }
 
 func (c *GitHubClient) CommandText(v *semver.Version) string {
-	return fmt.Sprintf("curl -sL %s | tar xf -", c.releaseURL(v))
+	return fmt.Sprintf("curl -sL %s | tar xf -\n", c.releaseURL(v))
 }
 
 func (c *GitHubClient) releaseURL(v *semver.Version) string {
