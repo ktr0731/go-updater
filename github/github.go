@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -40,14 +41,13 @@ func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 	if c.Decompresser == nil {
 		c.Decompresser = DefaultDecompresser
 	}
-
 	return c
 }
 
 func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 	r, _, err := c.client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get the latest release from GitHub")
 	}
 	return semver.MustParse(r.GetTagName()), nil
 }
@@ -55,23 +55,23 @@ func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 func (c *GitHubClient) Update(ctx context.Context) (*semver.Version, error) {
 	p, err := exec.LookPath(os.Args[0])
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to lookup the command, are you installed?")
 	}
 
 	latest, err := c.LatestTag(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get latest tag")
 	}
 
 	res, err := http.Get(c.releaseURL(latest))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get release binary")
 	}
 	defer res.Body.Close()
 
 	dec, err := c.Decompresser(res.Body)
 	if err != nil && err != io.EOF {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to decompress downloaded release file")
 	}
 
 	return latest, updateBinaryWithBackup(p, dec)
@@ -97,20 +97,20 @@ func updateBinaryWithBackup(p string, in io.Reader) error {
 
 	f, err := os.OpenFile(p, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to create the executable")
 	}
 	defer f.Close()
 
 	// backup current binary
 	if _, err := io.Copy(tmp, f); err != nil {
-		return err
+		return errors.Wrap(err, "failed to create backup")
 	}
 
 	if err := f.Truncate(0); err != nil {
-		return err
+		return errors.Wrap(err, "failed to truncate old executable content")
 	}
 	if _, err := f.Seek(0, 0); err != nil {
-		return err
+		return errors.Wrap(err, "failed to seek to head")
 	}
 
 	// rollback
@@ -124,6 +124,8 @@ func updateBinaryWithBackup(p string, in io.Reader) error {
 		}
 	}()
 
-	_, err = ioCopy(f, in)
-	return err
+	if _, err = ioCopy(f, in); err != nil {
+		return errors.Wrap(err, "failed to write new binary to file")
+	}
+	return nil
 }

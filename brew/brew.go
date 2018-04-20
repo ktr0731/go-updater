@@ -9,13 +9,12 @@ import (
 
 	semver "github.com/ktr0731/go-semver"
 	pipeline "github.com/mattn/go-pipeline"
+	"github.com/pkg/errors"
 )
 
 type HomeBrewClient struct {
 	formula, name string
 	cmdPath       string
-
-	cachedVersion *semver.Version
 }
 
 func NewHomeBrewMeans(formula, name string) *HomeBrewClient {
@@ -38,41 +37,36 @@ func NewHomeBrewMeans(formula, name string) *HomeBrewClient {
 //   2. get latest version by "brew info <formula>"
 func (c *HomeBrewClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 	// update formula
-	fmt.Println("update formula")
 	if c.formula != "" {
 		err := exec.Command(c.cmdPath, "tap", c.formula).Run()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to update formula: %s", c.formula)
 		}
 	}
 
 	// get latest version
-	fmt.Println("get latest version")
 	out, err := pipeline.Output(
 		[]string{c.cmdPath, "info", c.getFullName()},
 		[]string{"head", "-1"},
 		[]string{"awk", "{ print $3 }"},
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get the latest info: %s", c.getFullName())
 	}
 
-	latest := semver.MustParse(strings.TrimSpace(string(out)))
-	c.cachedVersion = latest
-
-	return latest, nil
+	return semver.MustParse(strings.TrimSpace(string(out))), nil
 }
 
 func (c *HomeBrewClient) Update(ctx context.Context) (*semver.Version, error) {
-	if c.cachedVersion == nil {
-		_, err := c.LatestTag(ctx)
-		if err != nil {
-			return nil, err
-		}
+	latest, err := c.LatestTag(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get the latest tag")
 	}
 
-	err := exec.Command(c.cmdPath, "upgrade", c.getFullName()).Run()
-	return c.cachedVersion, err
+	if err := exec.Command(c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
+		return nil, errors.Wrap(err, "failed to upgrade the binary")
+	}
+	return latest, nil
 }
 
 func (c *HomeBrewClient) Installed() bool {
