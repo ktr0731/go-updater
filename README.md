@@ -1,4 +1,5 @@
 # go-updater
+[![GoDoc](https://godoc.org/github.com/ktr0731/go-updater?status.svg)](https://godoc.org/github.com/ktr0731/go-updater)  
 
 ## Usage
 a software which using go-updater
