@@ -1,5 +1,6 @@
 # go-updater
-[![GoDoc](https://godoc.org/github.com/ktr0731/go-updater?status.svg)](https://godoc.org/github.com/ktr0731/go-updater)  
+[![GoDoc](https://godoc.org/github.com/ktr0731/go-updater?status.svg)](https://godoc.org/github.com/ktr0731/go-updater)
+[![CircleCI](https://circleci.com/gh/ktr0731/go-updater.svg?style=svg)](https://circleci.com/gh/ktr0731/go-updater)  
 
 ## Usage
 a software which using go-updater
