@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/ktr0731/go-updater
+    docker:
+      - image: circleci/golang:1.10
+
+    steps:
+      - checkout
+
+      - run:
+          name: build
+          command: make build
+
+      - run:
+          name: test
+          command: make test
