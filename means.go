@@ -13,15 +13,14 @@ import (
 type Means interface {
 	LatestTag(context.Context) (*semver.Version, error)
 	Update(context.Context, *semver.Version) error
-
-	Installed() bool
+	Installed(context.Context) bool
 
 	CommandText(*semver.Version) string
 }
 
 type MeansBuilder func() (Means, error)
 
-func SelectAvailableMeansFrom(ma ...MeansBuilder) (Means, error) {
+func SelectAvailableMeansFrom(ctx context.Context, ma ...MeansBuilder) (Means, error) {
 	for i := range ma {
 		m, err := ma[i]()
 		// if the means unavailable, ignore it
@@ -34,7 +33,7 @@ func SelectAvailableMeansFrom(ma ...MeansBuilder) (Means, error) {
 		}
 
 		// found
-		if m.Installed() {
+		if m.Installed(ctx) {
 			return m, nil
 		}
 	}

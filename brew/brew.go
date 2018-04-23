@@ -67,8 +67,8 @@ func (c *HomeBrewClient) Update(ctx context.Context, _ *semver.Version) error {
 	return nil
 }
 
-func (c *HomeBrewClient) Installed() bool {
-	out, err := exec.Command(c.cmdPath, "list", c.getFullName()).Output()
+func (c *HomeBrewClient) Installed(ctx context.Context) bool {
+	out, err := exec.CommandContext(ctx, c.cmdPath, "list", c.getFullName()).Output()
 	if err != nil {
 		return false
 	}

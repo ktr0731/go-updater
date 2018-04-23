@@ -75,7 +75,7 @@ func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error
 	return updateBinaryWithBackup(p, dec)
 }
 
-func (c *GitHubClient) Installed() bool {
+func (c *GitHubClient) Installed(_ context.Context) bool {
 	return isGitHubReleasedBinary != ""
 }
 

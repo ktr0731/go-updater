@@ -28,13 +28,13 @@ func New(current *semver.Version, m Means) *Updater {
 }
 
 // Update updates the binary if Updatable()
-func (u *Updater) Update() error {
-	updatable, _, err := u.Updatable()
+func (u *Updater) Update(ctx context.Context) error {
+	updatable, _, err := u.Updatable(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to check the latest release")
 	}
 	if updatable {
-		err = u.m.Update(context.TODO(), u.cachedLatest)
+		err = u.m.Update(ctx, u.cachedLatest)
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to update the binary")
@@ -42,10 +42,10 @@ func (u *Updater) Update() error {
 	return nil
 }
 
-func (u *Updater) Updatable() (bool, *semver.Version, error) {
+func (u *Updater) Updatable(ctx context.Context) (bool, *semver.Version, error) {
 	var err error
 	if u.cachedLatest == nil {
-		u.cachedLatest, err = u.m.LatestTag(context.Background())
+		u.cachedLatest, err = u.m.LatestTag(ctx)
 		if err != nil {
 			return false, nil, errors.Wrap(err, "failed to cache the latest release version")
 		}
