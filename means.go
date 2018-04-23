@@ -41,3 +41,7 @@ func SelectAvailableMeansFrom(ma ...MeansBuilder) (Means, error) {
 	// maybe manually installed (like go get)
 	return nil, ErrUnavailable
 }
+
+func NewMeans(b MeansBuilder) (Means, error) {
+	return b()
+}
