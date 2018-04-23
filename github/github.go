@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
+	updater "github.com/ktr0731/go-updater"
 	"github.com/pkg/errors"
 )
 
@@ -31,7 +32,7 @@ type GitHubClient struct {
 	Decompresser Decompresser
 }
 
-func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
+func GitHubReleaseMeans(owner, repo string) updater.MeansBuilder {
 	c := &GitHubClient{
 		client: github.NewClient(nil),
 		owner:  owner,
@@ -41,7 +42,9 @@ func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 	if c.Decompresser == nil {
 		c.Decompresser = DefaultDecompresser
 	}
-	return c
+	return func() (updater.Means, error) {
+		return c, nil
+	}
 }
 
 func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {

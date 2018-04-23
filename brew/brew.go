@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	semver "github.com/ktr0731/go-semver"
+	updater "github.com/ktr0731/go-updater"
 	pipeline "github.com/mattn/go-pipeline"
 	"github.com/pkg/errors"
 )
@@ -17,18 +18,20 @@ type HomeBrewClient struct {
 	cmdPath       string
 }
 
-func NewHomeBrewMeans(formula, name string) *HomeBrewClient {
-	if runtime.GOOS != "darwin" {
-		panic("HomeBrewClient expects to be use from macOS")
-	}
-	p, err := exec.LookPath("brew")
-	if err != nil {
-		panic("brew command missing or not executable")
-	}
-	return &HomeBrewClient{
-		formula: formula,
-		name:    name,
-		cmdPath: p,
+func HomeBrewMeans(formula, name string) updater.MeansBuilder {
+	return func() (updater.Means, error) {
+		if runtime.GOOS != "darwin" {
+			return nil, updater.ErrUnavailable
+		}
+		p, err := exec.LookPath("brew")
+		if err != nil {
+			return nil, updater.ErrUnavailable
+		}
+		return &HomeBrewClient{
+			formula: formula,
+			name:    name,
+			cmdPath: p,
+		}, nil
 	}
 }
 
