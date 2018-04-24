@@ -34,7 +34,7 @@ type GitHubClient struct {
 	Decompresser Decompresser
 }
 
-func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
+func GitHubReleaseMeans(owner, repo string) updater.MeansBuilder {
 	c := &GitHubClient{
 		client: github.NewClient(nil),
 		owner:  owner,
@@ -44,7 +44,9 @@ func NewGitHubReleaseMeans(owner, repo string) *GitHubClient {
 	if c.Decompresser == nil {
 		c.Decompresser = DefaultDecompresser
 	}
-	return c
+	return func() (updater.Means, error) {
+		return c, nil
+	}
 }
 
 func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {
@@ -75,7 +77,7 @@ func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error
 	return updateBinaryWithBackup(p, dec)
 }
 
-func (c *GitHubClient) Installed() bool {
+func (c *GitHubClient) Installed(_ context.Context) bool {
 	return isGitHubReleasedBinary != ""
 }
 

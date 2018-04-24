@@ -61,11 +61,11 @@ func TestUpdater_Update(t *testing.T) {
 
 			m.latest = semver.MustParse(c.latest)
 
-			updatable, _, err := u.Updatable()
+			updatable, _, err := u.Updatable(context.Background())
 			require.NoError(t, err)
 			assert.Equal(t, c.updatable, updatable)
 
-			err = u.Update()
+			err = u.Update(context.Background())
 			require.NoError(t, err)
 
 			if updatable {
