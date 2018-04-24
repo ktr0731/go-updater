@@ -63,7 +63,12 @@ func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error
 		return errors.Wrap(err, "failed to lookup the command, are you installed?")
 	}
 
-	res, err := http.Get(c.releaseURL(latest))
+	req, err := http.NewRequest(http.MethodGet, c.releaseURL(latest), nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to create new http request to get latest GitHub release")
+	}
+	req = req.WithContext(ctx)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "failed to get release binary")
 	}
