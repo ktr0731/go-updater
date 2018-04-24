@@ -20,8 +20,9 @@ var (
 
 func TestGitHubReleaseMeans_LatestTag(t *testing.T) {
 	// TODO: don't use real http request
-	c := NewGitHubReleaseMeans("ktr0731", "evans")
-	_, err := c.LatestTag(context.Background())
+	c, err := GitHubReleaseMeans("ktr0731", "evans")()
+	require.NoError(t, err)
+	_, err = c.LatestTag(context.Background())
 	assert.NoError(t, err)
 }
 
