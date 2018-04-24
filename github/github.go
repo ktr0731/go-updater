@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-github/github"
 	semver "github.com/ktr0731/go-semver"
+	updater "github.com/ktr0731/go-updater"
 	"github.com/pkg/errors"
 )
 
@@ -24,6 +25,8 @@ var (
 		runtime.GOARCH,
 	)
 )
+
+const MeansTypeGitHubRelease updater.MeansType = "github-release"
 
 type GitHubClient struct {
 	client       *github.Client
@@ -78,6 +81,10 @@ func (c *GitHubClient) Installed() bool {
 
 func (c *GitHubClient) CommandText(v *semver.Version) string {
 	return fmt.Sprintf("curl -sL %s | tar xf -\n", c.releaseURL(v))
+}
+
+func (c *GitHubClient) Type() updater.MeansType {
+	return MeansTypeGitHubRelease
 }
 
 func (c *GitHubClient) releaseURL(v *semver.Version) string {

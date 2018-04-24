@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -16,6 +17,13 @@ import (
 var (
 	_ updater.Means = (*GitHubClient)(nil)
 )
+
+func TestGitHubReleaseMeans_LatestTag(t *testing.T) {
+	// TODO: don't use real http request
+	c := NewGitHubReleaseMeans("ktr0731", "evans")
+	_, err := c.LatestTag(context.Background())
+	assert.NoError(t, err)
+}
 
 func TestUpdateBinaryWithBackup(t *testing.T) {
 	const defaultStr = "violet snow"

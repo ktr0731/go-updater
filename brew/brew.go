@@ -8,9 +8,12 @@ import (
 	"strings"
 
 	semver "github.com/ktr0731/go-semver"
+	updater "github.com/ktr0731/go-updater"
 	pipeline "github.com/mattn/go-pipeline"
 	"github.com/pkg/errors"
 )
+
+const MeansTypeHomeBrew updater.MeansType = "homebrew"
 
 type HomeBrewClient struct {
 	formula, name string
@@ -74,6 +77,10 @@ func (c *HomeBrewClient) Installed() bool {
 
 func (c *HomeBrewClient) CommandText(v *semver.Version) string {
 	return fmt.Sprintf("brew upgrade %s\n", c.getFullName())
+}
+
+func (c *HomeBrewClient) Type() updater.MeansType {
+	return MeansTypeHomeBrew
 }
 
 func (c *HomeBrewClient) getFullName() string {

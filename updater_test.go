@@ -25,9 +25,9 @@ func (m *mockMeans) LatestTag(_ context.Context) (*semver.Version, error) {
 	return m.latest, nil
 }
 
-func (m *mockMeans) Update(_ context.Context) (*semver.Version, error) {
+func (m *mockMeans) Update(_ context.Context, _ *semver.Version) error {
 	m.updateCalled = true
-	return m.latest, nil
+	return nil
 }
 
 func TestUpdater_Update(t *testing.T) {
