@@ -63,7 +63,7 @@ func (c *HomeBrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 }
 
 func (c *HomeBrewClient) Update(ctx context.Context, _ *semver.Version) error {
-	if err := exec.Command(c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
+	if err := exec.CommandContext(ctx, c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
 		return errors.Wrap(err, "failed to upgrade the binary")
 	}
 	return nil
