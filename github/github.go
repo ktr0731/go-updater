@@ -31,18 +31,21 @@ const MeansTypeGitHubRelease updater.MeansType = "github-release"
 type GitHubClient struct {
 	client       *github.Client
 	owner, repo  string
-	Decompresser Decompresser
+	decompresser Decompresser
 }
 
-func GitHubReleaseMeans(owner, repo string) updater.MeansBuilder {
+// GitHubReleaseMeans returns updater.MeansBuilder for GitHubReleases.
+// if dec is nil, DefaultDecompresser is used for extract binary from the compressed file.
+func GitHubReleaseMeans(owner, repo string, dec Decompresser) updater.MeansBuilder {
 	c := &GitHubClient{
-		client: github.NewClient(nil),
-		owner:  owner,
-		repo:   repo,
+		client:       github.NewClient(nil),
+		owner:        owner,
+		repo:         repo,
+		decompresser: dec,
 	}
 	// if didn't set Decompresser, use default compresser (tar.gz)
-	if c.Decompresser == nil {
-		c.Decompresser = DefaultDecompresser
+	if dec == nil {
+		c.decompresser = DefaultDecompresser
 	}
 	return func() (updater.Means, error) {
 		return c, nil
@@ -74,7 +77,7 @@ func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error
 	}
 	defer res.Body.Close()
 
-	dec, err := c.Decompresser(res.Body)
+	dec, err := c.decompresser(res.Body)
 	if err != nil && err != io.EOF {
 		return errors.Wrap(err, "failed to decompress downloaded release file")
 	}
