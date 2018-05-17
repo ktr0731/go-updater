@@ -66,7 +66,7 @@ func main() {
 	var m updater.Means
 	switch cfg.UpdateBy {
 	case "brew":
-		m = brew.NewHomeBrewMeans("ktr0731/evans", "evans")
+		m = brew.NewHomebrewMeans("ktr0731/evans", "evans")
 	case "gh-release":
 		m = github.NewGitHubReleaseMeans("ktr0731", "evans")
 	default:

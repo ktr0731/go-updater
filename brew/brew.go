@@ -13,14 +13,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-const MeansTypeHomeBrew updater.MeansType = "homebrew"
+const MeansTypeHomebrew updater.MeansType = "homebrew"
 
-type HomeBrewClient struct {
+type HomebrewClient struct {
 	formula, name string
 	cmdPath       string
 }
 
-func HomeBrewMeans(formula, name string) updater.MeansBuilder {
+func HomebrewMeans(formula, name string) updater.MeansBuilder {
 	return func() (updater.Means, error) {
 		if runtime.GOOS != "darwin" {
 			return nil, updater.ErrUnavailable
@@ -29,7 +29,7 @@ func HomeBrewMeans(formula, name string) updater.MeansBuilder {
 		if err != nil {
 			return nil, updater.ErrUnavailable
 		}
-		return &HomeBrewClient{
+		return &HomebrewClient{
 			formula: formula,
 			name:    name,
 			cmdPath: p,
@@ -40,12 +40,12 @@ func HomeBrewMeans(formula, name string) updater.MeansBuilder {
 // update instruction
 //   1. update formula by "brew tap <formula>" if formula is not empty
 //   2. get latest version by "brew info <formula>"
-func (c *HomeBrewClient) LatestTag(ctx context.Context) (*semver.Version, error) {
+func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 	// update formula
 	if c.formula != "" {
 		err := exec.Command(c.cmdPath, "tap", c.formula).Run()
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to update formula: %s", c.formula)
+			return nil, errors.Wrapf(err, "failed to update Homebrew formula: %s", c.formula)
 		}
 	}
 
@@ -62,14 +62,14 @@ func (c *HomeBrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 	return semver.MustParse(strings.TrimSpace(string(out))), nil
 }
 
-func (c *HomeBrewClient) Update(ctx context.Context, _ *semver.Version) error {
+func (c *HomebrewClient) Update(ctx context.Context, _ *semver.Version) error {
 	if err := exec.CommandContext(ctx, c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
-		return errors.Wrap(err, "failed to upgrade the binary")
+		return errors.Wrap(err, "failed to upgrade the binary by Homebrew")
 	}
 	return nil
 }
 
-func (c *HomeBrewClient) Installed(ctx context.Context) bool {
+func (c *HomebrewClient) Installed(ctx context.Context) bool {
 	out, err := exec.CommandContext(ctx, c.cmdPath, "list", c.getFullName()).Output()
 	if err != nil {
 		return false
@@ -77,15 +77,15 @@ func (c *HomeBrewClient) Installed(ctx context.Context) bool {
 	return len(out) != 0
 }
 
-func (c *HomeBrewClient) CommandText(v *semver.Version) string {
+func (c *HomebrewClient) CommandText(v *semver.Version) string {
 	return fmt.Sprintf("brew upgrade %s\n", c.getFullName())
 }
 
-func (c *HomeBrewClient) Type() updater.MeansType {
-	return MeansTypeHomeBrew
+func (c *HomebrewClient) Type() updater.MeansType {
+	return MeansTypeHomebrew
 }
 
-func (c *HomeBrewClient) getFullName() string {
+func (c *HomebrewClient) getFullName() string {
 	if c.formula != "" {
 		return fmt.Sprintf("%s/%s", c.formula, c.name)
 	}
