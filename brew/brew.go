@@ -1,6 +1,7 @@
 package brew
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -63,8 +64,11 @@ func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 }
 
 func (c *HomebrewClient) Update(ctx context.Context, _ *semver.Version) error {
-	if err := exec.CommandContext(ctx, c.cmdPath, "upgrade", c.getFullName()).Run(); err != nil {
-		return errors.Wrap(err, "failed to upgrade the binary by Homebrew")
+	cmd := exec.CommandContext(ctx, c.cmdPath, "upgrade", c.getFullName())
+	eo := new(bytes.Buffer)
+	cmd.Stderr = eo
+	if err := cmd.Run(); err != nil {
+		return errors.Wrapf(err, "failed to upgrade the binary by Homebrew: %s", eo.String())
 	}
 	return nil
 }
