@@ -21,9 +21,19 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/inconshreveable/go-update"
+  packages = [
+    ".",
+    "internal/binarydist",
+    "internal/osext"
+  ]
+  revision = "8152e7eb6ccf8679a64582a66b78519688d156ad"
+
+[[projects]]
   name = "github.com/ktr0731/go-semver"
   packages = ["."]
-  revision = "073805470c8767e7f7aa84e98cd06b8773503936"
+  revision = "5eaff990ec41aa33855f711d44896eb801b13536"
+  version = "0.1.0"
 
 [[projects]]
   branch = "master"
@@ -49,12 +59,12 @@
     "assert",
     "require"
   ]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8698d466567681c784a49bafe3fae7f99b4fee4cae1a402be2afc5b74fefd8cd"
+  inputs-digest = "a044877280065ef33dca5e9ac8758e4043a030c2104189fb98c08ff4c1fd5992"
   solver-name = "gps-cdcl"
   solver-version = 1

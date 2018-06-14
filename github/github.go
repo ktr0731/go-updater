@@ -1,7 +1,6 @@
 package github
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/google/go-github/github"
+	update "github.com/inconshreveable/go-update"
 	semver "github.com/ktr0731/go-semver"
 	updater "github.com/ktr0731/go-updater"
 	"github.com/pkg/errors"
@@ -82,7 +82,9 @@ func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error
 		return errors.Wrap(err, "failed to decompress downloaded release file")
 	}
 
-	return updateBinaryWithBackup(p, dec)
+	return update.Apply(dec, update.Options{
+		TargetPath: p,
+	})
 }
 
 func (c *GitHubClient) Installed(_ context.Context) bool {
@@ -99,45 +101,4 @@ func (c *GitHubClient) Type() updater.MeansType {
 
 func (c *GitHubClient) releaseURL(v *semver.Version) string {
 	return fmt.Sprintf(releaseURLFormat, c.owner, c.repo, v, c.repo)
-}
-
-// for testing
-var ioCopy = io.Copy
-
-func updateBinaryWithBackup(p string, in io.Reader) error {
-	tmp := &bytes.Buffer{}
-
-	f, err := os.OpenFile(p, os.O_CREATE|os.O_RDWR, 0755)
-	if err != nil {
-		return errors.Wrap(err, "failed to create the executable")
-	}
-	defer f.Close()
-
-	// backup current binary
-	if _, err := io.Copy(tmp, f); err != nil {
-		return errors.Wrap(err, "failed to create backup")
-	}
-
-	if err := f.Truncate(0); err != nil {
-		return errors.Wrap(err, "failed to truncate old executable content")
-	}
-	if _, err := f.Seek(0, 0); err != nil {
-		return errors.Wrap(err, "failed to seek to head")
-	}
-
-	// rollback
-	defer func() {
-		if err := recover(); err != nil {
-			io.Copy(f, tmp)
-			panic(err)
-		}
-		if err != nil {
-			io.Copy(f, tmp)
-		}
-	}()
-
-	if _, err = ioCopy(f, in); err != nil {
-		return errors.Wrap(err, "failed to write new binary to file")
-	}
-	return nil
 }
