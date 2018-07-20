@@ -44,7 +44,7 @@ func HomebrewMeans(formula, name string) updater.MeansBuilder {
 func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error) {
 	// update formula
 	if c.formula != "" {
-		err := exec.Command(c.cmdPath, "tap", c.formula).Run()
+		err := exec.CommandContext(ctx, c.cmdPath, "tap", c.formula).Run()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to update Homebrew formula: %s", c.formula)
 		}
