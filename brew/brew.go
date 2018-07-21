@@ -45,6 +45,9 @@ func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 	// update formula
 	if c.formula != "" {
 		err := exec.CommandContext(ctx, c.cmdPath, "tap", c.formula).Run()
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to update Homebrew formula: %s", c.formula)
 		}
