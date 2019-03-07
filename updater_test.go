@@ -5,27 +5,27 @@ import (
 	"fmt"
 	"testing"
 
-	semver "github.com/ktr0731/go-semver"
+	"github.com/hashicorp/go-version"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	v = semver.MustParse("0.1.0")
+	v = version.Must(version.NewSemver("0.1.0"))
 )
 
 type mockMeans struct {
-	latest       *semver.Version
+	latest       *version.Version
 	updateCalled bool
 
 	Means
 }
 
-func (m *mockMeans) LatestTag(_ context.Context) (*semver.Version, error) {
+func (m *mockMeans) LatestTag(_ context.Context) (*version.Version, error) {
 	return m.latest, nil
 }
 
-func (m *mockMeans) Update(_ context.Context, _ *semver.Version) error {
+func (m *mockMeans) Update(_ context.Context, _ *version.Version) error {
 	m.updateCalled = true
 	return nil
 }
@@ -57,9 +57,9 @@ func TestUpdater_Update(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			u, m := newMockUpdater(t)
 			u.UpdateIf = c.cond
-			u.current = semver.MustParse(c.current)
+			u.current = version.Must(version.NewSemver(c.current))
 
-			m.latest = semver.MustParse(c.latest)
+			m.latest = version.Must(version.NewSemver(c.latest))
 
 			updatable, _, err := u.Updatable(context.Background())
 			require.NoError(t, err)

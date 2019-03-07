@@ -3,7 +3,7 @@ package updater
 import (
 	"context"
 
-	semver "github.com/ktr0731/go-semver"
+	"github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 )
 
@@ -13,11 +13,11 @@ type MeansType string
 // For example, fetches the latest tag, update binary, or
 // check whether the software is installed by this.
 type Means interface {
-	LatestTag(context.Context) (*semver.Version, error)
-	Update(context.Context, *semver.Version) error
+	LatestTag(context.Context) (*version.Version, error)
+	Update(context.Context, *version.Version) error
 	Installed(context.Context) bool
 
-	CommandText(*semver.Version) string
+	CommandText(*version.Version) string
 
 	Type() MeansType
 }

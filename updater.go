@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	semver "github.com/ktr0731/go-semver"
+	"github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 )
 
@@ -13,13 +13,13 @@ import (
 type Updater struct {
 	UpdateIf UpdateCondition
 
-	current      *semver.Version
-	cachedLatest *semver.Version // to be set when call Updatable()
+	current      *version.Version
+	cachedLatest *version.Version // to be set when call Updatable()
 
 	m Means
 }
 
-func New(current *semver.Version, m Means) *Updater {
+func New(current *version.Version, m Means) *Updater {
 	return &Updater{
 		UpdateIf: FoundMinorUpdate,
 		current:  current,
@@ -42,7 +42,7 @@ func (u *Updater) Update(ctx context.Context) error {
 	return nil
 }
 
-func (u *Updater) Updatable(ctx context.Context) (bool, *semver.Version, error) {
+func (u *Updater) Updatable(ctx context.Context) (bool, *version.Version, error) {
 	var err error
 	if u.cachedLatest == nil {
 		u.cachedLatest, err = u.m.LatestTag(ctx)
@@ -53,7 +53,7 @@ func (u *Updater) Updatable(ctx context.Context) (bool, *semver.Version, error) 
 	return u.UpdateIf(u.current, u.cachedLatest), u.cachedLatest, nil
 }
 
-func (u *Updater) PrintInstruction(w io.Writer, v *semver.Version) error {
+func (u *Updater) PrintInstruction(w io.Writer, v *version.Version) error {
 	if _, err := io.WriteString(w, u.m.CommandText(v)); err != nil {
 		return errors.Wrap(err, "failed to write command text")
 	}

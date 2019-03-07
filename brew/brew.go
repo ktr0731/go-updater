@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	semver "github.com/ktr0731/go-semver"
+	"github.com/hashicorp/go-version"
 	updater "github.com/ktr0731/go-updater"
 	pipeline "github.com/mattn/go-pipeline"
 	"github.com/pkg/errors"
@@ -41,7 +41,7 @@ func HomebrewMeans(formula, name string) updater.MeansBuilder {
 // update instruction
 //   1. update formula by "brew tap <formula>" if formula is not empty
 //   2. get latest version by "brew info <formula>"
-func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error) {
+func (c *HomebrewClient) LatestTag(ctx context.Context) (*version.Version, error) {
 	// update formula
 	if c.formula != "" {
 		err := exec.CommandContext(ctx, c.cmdPath, "tap", c.formula).Run()
@@ -63,10 +63,10 @@ func (c *HomebrewClient) LatestTag(ctx context.Context) (*semver.Version, error)
 		return nil, errors.Wrapf(err, "failed to get the latest info: %s", c.getFullName())
 	}
 
-	return semver.MustParse(strings.TrimSpace(string(out))), nil
+	return version.Must(version.NewSemver(strings.TrimSpace(string(out)))), nil
 }
 
-func (c *HomebrewClient) Update(ctx context.Context, _ *semver.Version) error {
+func (c *HomebrewClient) Update(ctx context.Context, _ *version.Version) error {
 	cmd := exec.CommandContext(ctx, c.cmdPath, "upgrade", c.getFullName())
 	eo := new(bytes.Buffer)
 	cmd.Stderr = eo
@@ -84,7 +84,7 @@ func (c *HomebrewClient) Installed(ctx context.Context) bool {
 	return len(out) != 0
 }
 
-func (c *HomebrewClient) CommandText(v *semver.Version) string {
+func (c *HomebrewClient) CommandText(v *version.Version) string {
 	return fmt.Sprintf("brew upgrade %s\n", c.getFullName())
 }
 

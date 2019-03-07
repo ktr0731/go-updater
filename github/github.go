@@ -10,8 +10,8 @@ import (
 	"runtime"
 
 	"github.com/google/go-github/github"
+	"github.com/hashicorp/go-version"
 	update "github.com/inconshreveable/go-update"
-	semver "github.com/ktr0731/go-semver"
 	updater "github.com/ktr0731/go-updater"
 	"github.com/pkg/errors"
 )
@@ -52,15 +52,15 @@ func GitHubReleaseMeans(owner, repo string, dec Decompresser) updater.MeansBuild
 	}
 }
 
-func (c *GitHubClient) LatestTag(ctx context.Context) (*semver.Version, error) {
+func (c *GitHubClient) LatestTag(ctx context.Context) (*version.Version, error) {
 	r, _, err := c.client.Repositories.GetLatestRelease(ctx, c.owner, c.repo)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get the latest release from GitHub")
 	}
-	return semver.MustParse(r.GetTagName()), nil
+	return version.Must(version.NewSemver(r.GetTagName())), nil
 }
 
-func (c *GitHubClient) Update(ctx context.Context, latest *semver.Version) error {
+func (c *GitHubClient) Update(ctx context.Context, latest *version.Version) error {
 	p, err := exec.LookPath(os.Args[0])
 	if err != nil {
 		return errors.Wrap(err, "failed to lookup the command, are you installed?")
@@ -91,7 +91,7 @@ func (c *GitHubClient) Installed(_ context.Context) bool {
 	return isGitHubReleasedBinary != ""
 }
 
-func (c *GitHubClient) CommandText(v *semver.Version) string {
+func (c *GitHubClient) CommandText(v *version.Version) string {
 	return fmt.Sprintf("curl -sL %s | tar xf -\n", c.releaseURL(v))
 }
 
@@ -99,6 +99,6 @@ func (c *GitHubClient) Type() updater.MeansType {
 	return MeansTypeGitHubRelease
 }
 
-func (c *GitHubClient) releaseURL(v *semver.Version) string {
+func (c *GitHubClient) releaseURL(v *version.Version) string {
 	return fmt.Sprintf(releaseURLFormat, c.owner, c.repo, v, c.repo)
 }
