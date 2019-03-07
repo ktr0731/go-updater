@@ -9,8 +9,8 @@ import (
 
 type MeansType string
 
-// Means manages methods related to specified update means
-// for example, fetches the latest tag, update binary, or
+// Means manages methods related to specified update means.
+// For example, fetches the latest tag, update binary, or
 // check whether the software is installed by this.
 type Means interface {
 	LatestTag(context.Context) (*semver.Version, error)
