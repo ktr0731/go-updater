@@ -1,9 +1,12 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/ktr0731/go-updater
+    working_directory: /go/go-updater
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.11.2
+        environment:
+          GO111MODULE: "on"
+          GOPATH: /go
 
     steps:
       - checkout
