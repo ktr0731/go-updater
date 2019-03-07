@@ -10,16 +10,16 @@ package main
 import (
 	"fmt"
 
-	semver "github.com/ktr0731/go-semver"
+	version "github.com/hashicorp/go-version"
 	updater "github.com/ktr0731/go-updater"
 )
 
-var version = semver.MustParse("0.1.0")
+var current = version.Must(version.NewSemver("0.1.0"))
 
 func main() {
 	// determine what use means for update this software
 	// in this example, use GitHub release
-	u := updater.New(version, github.NewGitHubReleaseMeans("ktr0731", "evans"))
+	u := updater.New(current, github.NewGitHubReleaseMeans("ktr0731", "evans"))
 
 	// in default, update if minor update found
 	u.UpdateIf = updater.FoundPatchUpdate
@@ -27,7 +27,7 @@ func main() {
 	updatable, latest, _ := u.Updatable()
 	if updatable {
 		_ = u.Update()
-		fmt.Println("update from %s to %s", version, latest)
+		fmt.Println("update from %s to %s", current, latest)
 	} else {
 		fmt.Println("already latest")
 	}
@@ -44,13 +44,13 @@ import (
 	"fmt"
 	"os"
 
-	semver "github.com/ktr0731/go-semver"
+	version "github.com/hashicorp/go-version"
 	updater "github.com/ktr0731/go-updater"
 	"github.com/ktr0731/go-updater/brew"
 	"github.com/ktr0731/go-updater/github"
 )
 
-var version = semver.MustParse("0.1.0")
+var current = version.Must(version.NewSemver("0.1.0"))
 
 type Config struct {
 	UpdateBy string `json:"updateBy"`
@@ -73,11 +73,11 @@ func main() {
 		panic("unknown means")
 	}
 
-	u := updater.New(version, m)
+	u := updater.New(current, m)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	var latest *semver.Version
+	var latest *version.Version
 	go func() {
 		defer cancel()
 		var updatable bool
@@ -95,7 +95,7 @@ func main() {
 	cancel()
 	<-ctx.Done()
 	if latest != nil {
-		fmt.Println("updated from %s to %s", version, latest)
+		fmt.Println("updated from %s to %s", current, latest)
 	}
 }
 ```
