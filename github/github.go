@@ -17,7 +17,9 @@ import (
 )
 
 var (
-	isGitHubReleasedBinary string
+	// IsGitHubReleasedBinary means the app is installed by GitHub Releases.
+	// The app must change this value to true to use GitHub means.
+	IsGitHubReleasedBinary bool
 
 	releaseURLFormat = fmt.Sprintf(
 		"https://github.com/%%s/%%s/releases/download/%%s/%%s_%s_%s.tar.gz",
@@ -88,7 +90,7 @@ func (c *GitHubClient) Update(ctx context.Context, latest *version.Version) erro
 }
 
 func (c *GitHubClient) Installed(_ context.Context) bool {
-	return isGitHubReleasedBinary != ""
+	return IsGitHubReleasedBinary
 }
 
 func (c *GitHubClient) CommandText(v *version.Version) string {
