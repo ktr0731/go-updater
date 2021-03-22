@@ -1,5 +1,7 @@
 module github.com/ktr0731/go-updater
 
+go 1.15
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-github v17.0.0+incompatible
