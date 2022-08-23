@@ -57,13 +57,13 @@ func (c *HomebrewClient) LatestTag(ctx context.Context) (*version.Version, error
 	out, err := pipeline.Output(
 		[]string{c.cmdPath, "info", c.getFullName()},
 		[]string{"head", "-1"},
-		[]string{"awk", "{ print $3 }"},
+		[]string{"awk", "{ print $4 }"},
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get the latest info: %s", c.getFullName())
 	}
 
-	return version.Must(version.NewSemver(strings.TrimSpace(string(out)))), nil
+	return version.NewSemver(strings.TrimSpace(string(out)))
 }
 
 func (c *HomebrewClient) Update(ctx context.Context, _ *version.Version) error {
