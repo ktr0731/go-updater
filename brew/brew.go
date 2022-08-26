@@ -57,7 +57,7 @@ func (c *HomebrewClient) LatestTag(ctx context.Context) (*version.Version, error
 	out, err := pipeline.Output(
 		[]string{c.cmdPath, "info", c.getFullName()},
 		[]string{"head", "-1"},
-		[]string{"grep", "-o", "-E", "([0-9]+\.){1}[0-9]+(\.[0-9]+)?"},
+		[]string{"grep", "-o", "-E", `([0-9]+\.){1}[0-9]+(\.[0-9]+)?`},
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get the latest info: %s", c.getFullName())
